@@ -1,0 +1,40 @@
+version: '3'
+services:
+  react: # サービス名称定義
+    build: 
+      context: . # Dockerfileの保存場所がこのymlファイルと違う場合にcontextに指定する
+      dockerfile: ./docker/react/Dockerfile # Dockerfileの場所
+    container_name: react_container # コンテナ名称
+    tty: true #ttyとは標準入出力先のデバイスのこと。コンテナを継続させたい場合やフォアグラウンドで実行しているプログラムがない場合にture
+    volumes:
+      - ./react-app/react-app:/app/react # volumeの対応付け
+    command: sh -c "cd /app/react && yarn install && yarn start"
+    ports: # ホストとコンテナのポート番号を対応づける
+      - 3000:3000
+  go:
+    build:
+      context: .
+      dockerfile: ./docker/golang/Dockerfile
+    container_name: go_container
+    ports:
+      - 8000:8000
+    tty: true
+    volumes:
+      - ./go-app:/app/go
+  mysql:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+    container_name: mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: react-go-app
+      TZ: 'Asia/Tokyo'
+    volumes:
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+      - ./docker/mysql/mysql_data:/var/lib/mysql
+    ports:
+    - 3306:3306
+    links:
+      - go
