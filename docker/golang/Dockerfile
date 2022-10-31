@@ -2,9 +2,7 @@ FROM golang:alpine
 RUN apk update
 RUN apk add alpine-sdk
 COPY ./go-app /app/go
-# COPY go.mod /app/go
+COPY ./go-app/go.mod /app/go
 WORKDIR /app/go
-# ENV GO111MODULE=on
-RUN go init
 RUN go build -o main .
 CMD [ "/app/go/main" ]
